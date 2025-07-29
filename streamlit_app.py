@@ -1,41 +1,36 @@
 import streamlit as st
 import openai
 
-# Configuration Streamlit
-st.set_page_config(page_title="CareerPilot IA", layout="centered")
-st.title("🚀 CareerPilot IA")
-st.markdown("Une application IA interactive pour explorer les carrières et poser des questions.")
+st.set_page_config(page_title="🛣️ Simulateur de reconversion", page_icon="🔄")
 
-# Clé API OpenAI (à remplacer par ta propre clé ou via secrets Streamlit)
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+openai.api_key = st.secrets["openai_key"]
 
-# Sidebar
-st.sidebar.header("📁 Menu")
-option = st.sidebar.radio("Navigation :", ["Accueil", "Chatbot IA", "À propos"])
+st.title("🔁 Simulateur de reconversion pro")
 
-# Accueil
-if option == "Accueil":
-    st.subheader("📌 Bienvenue")
-    st.write("Utilise le menu pour démarrer le chatbot ou en savoir plus sur l’app.")
+current_job = st.text_input("Quel est ton métier actuel ?")
+reason = st.text_area("Pourquoi veux-tu changer de domaine ?")
+target_fields = st.multiselect(
+    "Vers quels domaines veux-tu te reconvertir ?",
+    ["Intelligence Artificielle", "UX Design", "Développement Web", "Marketing Digital", "Freelance", "Cybersecurity", "Gestion de projet"]
+)
 
-# Chatbot IA
-elif option == "Chatbot IA":
-    st.subheader("💬 Interagis avec le chatbot")
-    user_input = st.text_input("Pose ta question ici :")
-
-    if user_input:
-        with st.spinner("Réponse en cours..."):
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "Tu es un assistant de carrière amical et compétent."},
-                    {"role": "user", "content": user_input}
-                ]
-            )
-            st.success("Réponse reçue ✅")
-            st.markdown(f"**🤖 CareerBot :** {response['choices'][0]['message']['content']}")
-
-# À propos
-else:
-    st.subheader("ℹ️ À propos")
-    st.write("Développé avec ❤️ par Ilyes et Copilot. Powered by OpenAI & Streamlit.")
+if st.button("🚀 Lance le simulateur IA") and current_job and reason and target_fields:
+    with st.spinner("L’IA explore les trajectoires pour toi..."):
+        prompt = f"""
+        Métier actuel : {current_job}
+        Motivation : {reason}
+        Domaines ciblés : {', '.join(target_fields)}
+        
+        Propose un plan de reconversion réaliste. Inclure :
+        - Étapes concrètes de transition
+        - Formations ou certifications pertinentes
+        - Potentiel salarial et perspectives d’avenir
+        - Conseils personnalisés
+        """
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7
+        )
+        st.success("🧠 Ton plan de reconversion IA :")
+        st.write(response.choices[0].message.content)
